@@ -213,6 +213,10 @@ class IntentRouter:
         """
         Determine routing bucket based on intent and confidence.
         
+        IMPORTANT: Confidence-based fallback to RAG + Small LLM
+        - This prevents wrong direct answers from low-confidence predictions
+        - Safer and cheaper than full escalation
+        
         Args:
             intent: Predicted intent
             confidence: Confidence score
@@ -220,25 +224,32 @@ class IntentRouter:
         Returns:
             Dictionary containing routing decision
         """
-        # Check confidence threshold
+        # CRITICAL: Confidence-based fallback
+        # If confidence < threshold, route to BUCKET_B (RAG + Small LLM)
+        # This avoids:
+        #   - Wrong direct answers (BUCKET_A)
+        #   - Expensive escalation (BUCKET_C)
+        # And provides:
+        #   - Safe handling with context (RAG)
+        #   - Cost-effective solution (Small LLM)
         if confidence < self.confidence_threshold:
             return {
-                'bucket': 'BUCKET_C',
-                'action': 'LOW_CONFIDENCE_ESCALATE',
-                'reason': f'Low confidence ({confidence:.2%}) - Escalate to human',
-                'cost_tier': 'High'
+                'bucket': 'BUCKET_B',
+                'action': 'LOW_CONFIDENCE_RAG',
+                'reason': f'Low confidence ({confidence:.2%}) - Use RAG + Small LLM for safety',
+                'cost_tier': 'Low'
             }
         
         # Get routing info for intent
         routing_info = self.intent_to_bucket.get(intent)
         
         if routing_info is None:
-            # Unknown intent - escalate
+            # Unknown intent - use RAG fallback (not escalation)
             return {
-                'bucket': 'BUCKET_C',
-                'action': 'UNKNOWN_INTENT_ESCALATE',
-                'reason': f'Unknown intent "{intent}" - Escalate to human',
-                'cost_tier': 'High'
+                'bucket': 'BUCKET_B',
+                'action': 'UNKNOWN_INTENT_RAG',
+                'reason': f'Unknown intent "{intent}" - Use RAG + Small LLM',
+                'cost_tier': 'Low'
             }
         
         # Determine action based on bucket
