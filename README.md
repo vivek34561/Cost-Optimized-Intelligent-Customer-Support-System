@@ -1,132 +1,455 @@
-# Customer Support Chatbot
+# 🤖 Intelligent Customer Support Chatbot – Cost-Optimized RAG System
 
-Intelligent customer support chatbot with 3-tier routing system (Zero-cost FAQ, RAG + Small LLM, Escalation) achieving **79.6% cost reduction** vs uniform big LLM approach.
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python"/>
+  <img src="https://img.shields.io/badge/LangGraph-latest-green.svg" alt="LangGraph"/>
+  <img src="https://img.shields.io/badge/FastAPI-latest-009688.svg" alt="FastAPI"/>
+  <img src="https://img.shields.io/badge/FAISS-Vector%20DB-orange.svg" alt="FAISS"/>
+  <img src="https://img.shields.io/badge/Groq-LLM-purple.svg" alt="Groq"/>
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"/>
+</p>
 
-## 🎯 Key Features
+<p align="center">
+  <strong>A production-grade customer support chatbot with intelligent 3-tier routing achieving 79.6% cost reduction through adaptive RAG and sentiment-based escalation.</strong>
+</p>
 
-- **Intent Classification:** 97.69% accuracy on 27 intents using TF-IDF + Logistic Regression
-- **Smart Routing:** 3-bucket system (Zero-cost FAQ, RAG, Escalation)
-- **Local Embeddings:** HuggingFace sentence-transformers (free, runs offline)
-- **Local Vector DB:** FAISS (no cloud service needed)
-- **Fast LLM:** Groq (750+ tokens/sec)
-- **LangGraph:** State machine orchestration
-- **Confidence Fallback:** Low confidence queries routed safely to RAG
+<p align="center">
+  <a href="#-features">✨ Features</a> •
+  <a href="#-architecture">🏗️ Architecture</a> •
+  <a href="#-quick-start">🚀 Quick Start</a> •
+  <a href="#-performance-metrics">📊 Performance</a> •
+  <a href="#-project-structure">📂 Project Structure</a> •
+  <a href="#-deployment">🚀 Deployment</a>
+</p>
 
-## 📊 Performance
+---
 
-- **Cost Savings:** 79.6% reduction
-- **Zero-cost Routing:** 30.6% of queries
-- **Low-cost Routing:** 51.6% of queries
-- **High-cost Routing:** 17.8% of queries
-- **Intent Accuracy:** 97.69%
+## 🎯 Overview
+
+This is a **production-ready customer support chatbot** built with **LangChain, LangGraph, and FastAPI** that intelligently routes queries through a cost-optimized 3-tier system.
+
+Instead of processing all queries equally, the system:
+
+* Routes **FAQ queries** to template responses (zero cost)
+* Uses **RAG + Local LLM** for procedural questions (low cost)
+* Escalates **complex/sensitive issues** to human agents (high cost)
+* Applies **sentiment analysis** to detect frustrated customers and prioritize them
+* Achieves **97.69% intent classification accuracy** on 27 intents
+
+This results in **79.6% cost reduction** while maintaining high-quality responses.
+
+---
+
+## 💡 Why This Project?
+
+**The Problem:**
+Traditional chatbots either:
+* Use expensive LLMs for every query (high cost)
+* Use templates for everything (poor user experience)
+* Don't detect customer emotion (frustrated customers get automated responses)
+
+**The Solution:**
+Build a **self-routing, emotion-aware chatbot** that:
+* Decides *how* to answer based on query complexity
+* Uses *sentiment analysis* to catch angry customers
+* Optimizes *cost* without sacrificing quality
+* Provides a *production REST API* for integration
+
+**Key Innovation:**
+Combines intent classification, sentiment analysis, and adaptive RAG in a unified LangGraph workflow.
+
+---
+
+## ✨ Key Features
+
+### 🎯 Intelligent Routing
+* **3-Bucket System**: Zero-cost templates → Low-cost RAG → High-cost escalation
+* **97.69% Accuracy**: TF-IDF + Logistic Regression intent classifier (27 intents)
+* **Confidence Fallback**: Low-confidence queries safely routed to RAG
+
+### 😊 Sentiment-Based Escalation
+* **Hybrid Analysis**: Combines DistilBERT sentiment + keyword detection
+* **Smart Override**: Routes angry customers to human support even for simple queries
+* **False Positive Prevention**: Keyword filter prevents neutral questions from escalating
+
+### 🧠 Local-First Architecture
+* **HuggingFace Embeddings**: sentence-transformers/all-MiniLM-L6-v2 (runs offline)
+* **FAISS Vector Database**: No cloud dependencies, version-controllable index
+* **Groq LLM**: Ultra-fast inference (750+ tokens/sec), free tier available
+
+### 🚀 Production Ready
+* **FastAPI REST API**: 5 endpoints with auto-generated docs
+* **Web Chat UI**: Beautiful responsive interface
+* **Lazy Loading**: Models load on first request (deployment-friendly)
+* **Response Cleaning**: Automatically removes LLM thinking tags and formatting issues
+
+---
+
+## 📊 Performance Metrics
+
+| Metric | Value |
+|--------|-------|
+| **Cost Reduction** | 79.6% vs uniform LLM |
+| **Intent Accuracy** | 97.69% (27 intents) |
+| **Zero-Cost Routing** | 30.6% of queries |
+| **Low-Cost Routing** | 51.6% of queries |
+| **High-Cost Routing** | 17.8% of queries |
+| **Dataset Size** | 26,872 examples |
+| **Response Time** | <2s (after model load) |
+
+---
 
 ## 🚀 Quick Start
 
-### 1. Install Dependencies
-```bash
-pip install -r requirements-rag.txt
-```
+### Prerequisites
 
-### 2. Set Up Groq API Key
-Create `.env` file:
-```bash
+* Python 3.10+
+* Groq API key (free at [console.groq.com](https://console.groq.com))
+
+### Environment Setup
+
+Create a `.env` file:
+
+```env
 GROQ_API_KEY=your_groq_api_key_here
-```
-Get free API key from: https://console.groq.com
-
-### 3. Build FAISS Index
-```bash
-# Test with 100 documents
-python build_rag_index.py --limit 100
-
-# Or full index (26,872 documents)
-python build_rag_index.py
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+LLM_MODEL=llama-3.3-70b-versatile
+ENABLE_SENTIMENT_ANALYSIS=true
 ```
 
-### 4. Run Chatbot
-```bash
-# Test mode
-python src/main.py
+### Install Dependencies
 
-# Interactive mode
+```bash
+**Note:** Embedding model (~90MB) downloads automatically on first run and is cached locally.
+
+### Run the Chatbot
+
+#### Option 1: Interactive CLI
+
+```bash
 python src/main.py interactive
 ```
 
-## 🏗️ Architecture
+#### Option 2: REST API
 
-### Technology Stack
-- **Intent Classification:** scikit-learn (TF-IDF + Logistic Regression)
-- **Embeddings:** HuggingFace sentence-transformers (`all-MiniLM-L6-v2`)
-- **Vector Database:** FAISS (local, no cloud)
-- **LLM:** Groq (`llama-3.3-70b-versatile`)
-- **Orchestration:** LangGraph state machine
-- **Dataset:** Bitext Customer Support (26,872 examples, 27 intents)
+```bash
+# Start FastAPI server
+python api.py
 
-### Project Structure
-```
-src/
-├── state/          # State definitions
-├── llm/            # LLM configurations & prompts
-├── nodes/          # LangGraph nodes (intent, retrieve, generate)
-├── graph/          # State machine workflow
-└── main.py         # Main chatbot interface
-
-models/             # Intent classification models
-data/               # FAISS index (created on build)
-intent_router.py    # Reusable routing module
+# API runs at http://localhost:8000
+# Docs at http://localhost:8000/docs
 ```
 
-### Routing System
+#### Option 3: Web Chat UI
 
-**BUCKET_A (Zero-cost):** FAQ intents with template responses
-- No LLM needed
-- 8 intents: check_invoice, track_order, payment_methods, etc.
+Open `chat_ui.html` in your browser after starting the API.
 
-**BUCKET_B (Low-cost):** RAG + Small LLM
-- FAISS retrieval + Groq generation
-- 15 intents: cancel_order, create_account, get_refund, etc.
+### Test the API
 
-**BUCKET_C (High-cost):** Escalation
-- Complex issues requiring attention
-- 4 intents: complaint, contact_human_agent, etc.
-
-### LangGraph Flow
-```
-START → intent → [conditional] → generate → END
-                      ↓
-                  retrieve (only BUCKET_B) → generate → END
+```bash
+python test_api.py
 ```
 
-## 📚 Documentation
+---
 
-- **[RAG_SETUP.md](RAG_SETUP.md)** - Complete setup guide
-- **[CONFIDENCE_FALLBACK.md](CONFIDENCE_FALLBACK.md)** - Confidence-based routing
+## 📂 Project Structure
 
-## 🧪 Testing
+```
+Customer Support Chatbot/
+├── src/
+│   ├── config.py                      # Configuration & environment
+│   ├── faiss_index_builder.py         # FAISS index builder
+│   ├── retriever.py                   # RAG retriever
+│   │
+│   ├── state/
+│   │   └── state.py                   # ChatbotState TypedDict
+│   │
+│   ├── llm/
+│   │   ├── models.py                  # Groq LLM setup
+│   │   └── prompts.py                 # System prompts & templates
+│   │
+│   ├── nodes/
+│   │   ├── intent_node.py             # Intent + sentiment analysis
+│   │   ├── retrieve_node.py           # FAISS retrieval
+│   │   └── generate_node.py           # LLM generation + cleaning
+│   │
+│   ├── graph/
+│   │   └── chatbot_graph.py           # LangGraph workflow
+│   │
+│   └── main.py                        # Main interface
+│
+├── models/
+│   ├── tfidf_vectorizer.pkl           # TF-IDF model
+│   ├── intent_classifier.pkl          # Logistic Regression
+│   └── routing_config.json            # Bucket mappings
+│
+├── data/
+│   └── faiss_index/                   # Vector DB (created at build)
+│
+├── Notebook/
+│   └── sementic_analysis.ipynb        # Sentiment testing
+│
+├── api.py                             # FastAPI server
+├── chat_ui.html                       # Web interface
+├── intent_router.py                   # Routing module
+├── build_rag_index.py                 # Index builder script
+├── test_api.py                        # API tests
+├── requirements.txt                   # Dependencies
+├── .env                               # API keys (create this)
+└── README.md                          # This file
+```
 
-### Test Intent Router
+---
+
+## 🧪 Testing & Evaluation
+
+### Test Intent Classification
+
 ```bash
 python intent_router.py
 ```
 
-### Dry-Run Evaluation
+### Test Sentiment Analysis
+
+```bash
+python test_sentiment_routing.py
+```
+
+### Dry-Run Evaluation (500 samples)
+
 ```bash
 python dry_run_evaluation.py
 ```
 
 ### Test RAG Retrieval
+
 ```bash
 python src/retriever.py
 ```
 
-## 💡 Why This Stack?
+---
 
-### HuggingFace Embeddings
-- ✅ Free and runs locally
-- ✅ No API calls or rate limits
-- ✅ Fast inference (~1ms)
-- ✅ Works offline after model download
+## 🔬 How It Works
 
+### 1. Intent Classification
+
+* **Model**: TF-IDF + Logistic Regression
+* **Accuracy**: 97.69% on 27 intents
+* **Processing**: <10ms per query
+* **Output**: Intent label + confidence score
+
+**Example:**
+```
+Input: "How do I track my order?"
+Output: track_order (98% confidence) → BUCKET_A
+```
+
+### 2. Sentiment Analysis (Hybrid Approach)
+
+* **Model**: DistilBERT SST-2 (sentiment) + keyword filter (anger detection)
+* **Logic**: 
+  - Classify sentiment (POSITIVE/NEGATIVE)
+  - Check for anger keywords (terrible, frustrated, useless, etc.)
+  - Override bucket to BUCKET_C if: NEGATIVE + high confidence + anger detected
+
+**Example:**
+```
+Input: "This is terrible! I want my money back!"
+Sentiment: NEGATIVE (92%) + anger keywords detected
+Action: Override BUCKET_A → BUCKET_C (escalate)
+```
+
+### 3. FAISS Retrieval (BUCKET_B only)
+
+* **Embeddings**: sentence-transformers/all-MiniLM-L6-v2 (384 dim)
+* **Index**: IndexFlatIP (cosine similarity)
+* **Top-K**: 3 most relevant documents
+* **Storage**: Local files (no cloud)
+
+### 4. Response Generation
+
+* **BUCKET_A**: Return template (no LLM)
+* **BUCKET_B**: RAG prompt + Groq LLM + response cleaning
+* **BUCKET_C**: Escalation message
+
+**Response Cleaning:**
+- Removes `<think>...</think>` tags
+- Removes internal reasoning
+- Cleans whitespace
+
+---
+
+## 🎯 Three-Bucket Routing System
+
+### BUCKET_A: Zero-Cost (30.6% of queries)
+
+**Intents:** 
+- check_invoice
+- check_payment_methods
+- check_refund_policy
+- check_cancellation_fee
+- delivery_period
+- delivery_options
+- track_order
+- track_refund
+
+**Handling:** Template responses, no LLM
+**Cost:** $0
+
+### BUCKET_B: Low-Cost (51.6% of queries)
+
+**Intents:**
+- cancel_order, change_order
+- create_account, edit_account, delete_account
+- get_invoice, get_refund
+- change_shipping_address, set_up_shipping_address
+- place_order, recover_password
+- registration_problems, newsletter_subscription
+- review, switch_account
+
+**Handling:** FAISS retrieval → Groq generation
+**Cost:** ~$0.0001 per query
+
+### BUCKET_C: High-Cost (17.8% of queries)
+
+**Intents:**
+- complaint
+- payment_issue
+- contact_customer_service
+- contact_human_agent
+
+**Handling:** Escalation message or human handoff
+**Cost:** Variable
+**Trigger:** Intent-based OR sentiment override
+
+---
+
+## 🚀 Deployment
+
+### Local Development
+
+```bash
+python api.py
+# Access at http://localhost:8000
+```
+
+### Production Deployment
+
+**Supported Platforms:**
+- Railway.app (Recommended - $5 free credit/month)
+- Fly.io (Free tier: 256MB x 3 machines)
+- Render.com (Free tier: 512MB RAM - requires optimization)
+
+**Deployment Guide:** See [DEPLOYMENT.md](DEPLOYMENT.md)
+
+**Memory Optimization:**
+- Lazy loading enabled by default
+- Sentiment analysis optional (`ENABLE_SENTIMENT_ANALYSIS=false` saves ~200MB)
+- Recommended: 2GB RAM for full features
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | API information |
+| `/health` | GET | Health check |
+| `/chat` | POST | Process message |
+| `/intents` | GET | List all intents |
+| `/stats` | GET | Performance metrics |
+
+**API Documentation:** `http://localhost:8000/docs` (auto-generated)
+
+---
+
+## 📊 What Makes This Project Strong
+
+✅ **Production-Grade Architecture**
+- Not a demo - ready for real deployment
+- FastAPI with proper error handling
+- Lazy loading for deployment optimization
+
+✅ **Cost Optimization**
+- 79.6% cost reduction proven on 500-query evaluation
+- Smart routing means most queries use zero/low-cost paths
+
+✅ **Emotion Intelligence**
+- Sentiment analysis catches frustrated customers
+- Hybrid approach prevents false positives
+
+✅ **Real ML Engineering**
+- 97.69% classification accuracy
+- Proper train/test split
+- Confidence-based fallbacks
+
+✅ **Modern Stack**
+- LangGraph state machines
+- Local-first (works offline after setup)
+- Clean separation of concerns
+
+This is the kind of chatbot used in:
+* E-commerce customer support
+* SaaS helpdesks
+* Internal IT support
+* Banking/fintech support
+
+---
+
+## 🔮 Future Improvements
+
+- [ ] Multi-language support
+- [ ] Conversation memory (chat history)
+- [ ] Streaming responses
+- [ ] Custom knowledge base upload
+- [ ] Fine-tuned intent classifier
+- [ ] A/B testing framework
+- [ ] Analytics dashboard
+- [ ] Docker containerization
+
+---
+
+## 👨‍💻 Author
+
+**Vivek Kumar Gupta**
+AI Engineering Student | GenAI & Agentic Systems Builder
+
+* **GitHub**: [https://github.com/vivek34561](https://github.com/vivek34561)
+* **LinkedIn**: [https://linkedin.com/in/vivek-gupta-0400452b6](https://linkedin.com/in/vivek-gupta-0400452b6)
+* **Portfolio**: [https://resume-sepia-seven.vercel.app/](https://resume-sepia-seven.vercel.app/)
+
+---
+
+## 🙏 Acknowledgments
+
+- **Bitext** for the customer support dataset
+- **HuggingFace** for sentence-transformers and DistilBERT
+- **Meta AI** for FAISS vector database
+- **Groq** for lightning-fast LLM inference
+- **LangChain team** for LangGraph framework
+
+---
+
+## 📄 License
+
+MIT License © 2025 Vivek Kumar Gupta
+
+---
+
+## 🚀 Ready to Run?
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Set up .env with GROQ_API_KEY
+
+# 3. Build FAISS index
+python build_rag_index.py --limit 100
+
+# 4. Run interactively
+python src/main.py interactive
+
+# OR run API
+python api.py
 ### FAISS Vector Database
 - ✅ No cloud service needed
 - ✅ No API keys for vector DB

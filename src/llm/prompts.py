@@ -13,8 +13,12 @@ Use the provided context from the knowledge base to answer the customer's questi
 If the context contains relevant information, use it to provide a helpful answer.
 If the context doesn't contain relevant information, provide a general helpful response and suggest contacting support.
 
-Be professional, concise, and customer-focused.
-Always maintain a friendly and empathetic tone."""
+IMPORTANT INSTRUCTIONS:
+- Be professional, concise, and customer-focused
+- Always maintain a friendly and empathetic tone
+- DO NOT include any internal reasoning, thinking process, or XML tags like <think>, <reasoning>, etc.
+- Output ONLY the customer-facing response
+- Keep responses clear and well-structured"""
 
 
 def get_rag_prompt(context: str, query: str) -> str:

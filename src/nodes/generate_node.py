@@ -5,6 +5,7 @@ LLM Generation Node
 Generates response using LLM with context.
 """
 
+import re
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 from src.state import ChatbotState
@@ -25,6 +26,30 @@ class GenerateNode:
         """Initialize LLM factory"""
         self.llm_factory = LLMFactory()
         print("  ✓ Generation node initialized")
+    
+    def _clean_response(self, response: str) -> str:
+        """
+        Clean LLM response by removing thinking tags and formatting issues
+        
+        Args:
+            response: Raw LLM response
+            
+        Returns:
+            Cleaned response
+        """
+        # Remove <think>...</think> tags and their content
+        response = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL | re.IGNORECASE)
+        
+        # Remove other common internal tags
+        response = re.sub(r'<reasoning>.*?</reasoning>', '', response, flags=re.DOTALL | re.IGNORECASE)
+        response = re.sub(r'<thought>.*?</thought>', '', response, flags=re.DOTALL | re.IGNORECASE)
+        response = re.sub(r'<internal>.*?</internal>', '', response, flags=re.DOTALL | re.IGNORECASE)
+        
+        # Clean up excessive whitespace
+        response = re.sub(r'\n\s*\n\s*\n+', '\n\n', response)  # Multiple newlines to max 2
+        response = response.strip()
+        
+        return response
     
     def _generate_bucket_a_response(self, state: ChatbotState) -> str:
         """
@@ -63,7 +88,10 @@ class GenerateNode:
         # Generate response
         response = llm.invoke([system_msg, user_msg])
         
-        return response.content
+        # Clean response (remove thinking tags, formatting issues)
+        cleaned_response = self._clean_response(response.content)
+        
+        return cleaned_response
     
     def _generate_bucket_c_response(self, state: ChatbotState) -> str:
         """
