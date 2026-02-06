@@ -149,6 +149,41 @@ class IntentRouter:
         text_clean = re.sub(r'\s+', ' ', text_clean)
         
         return text_clean
+
+    @staticmethod
+    def _keyword_intent_override(cleaned_text: str) -> Optional[Dict[str, Any]]:
+        """Return an override intent when the query is an obvious FAQ.
+
+        This is a safety net for common short questions where the ML intent
+        model may confuse a general FAQ with a high-cost escalation intent.
+        """
+        text = cleaned_text
+
+        # Heuristic: payment method/options FAQ
+        payment_method_patterns = [
+            r"\bpayment methods?\b",
+            r"\bpayment options?\b",
+            r"\bways to pay\b",
+            r"\bhow (can|do) i pay\b",
+            r"\baccepted payments?\b",
+        ]
+        payment_issue_patterns = [
+            r"\b(payment|transaction)\b.*\b(fail|failed|error|declin|declined|problem|issue|not working|stuck)\b",
+            r"\b(charged|deducted)\b.*\b(twice|double|again|extra)\b",
+            r"\b(card|upi|paypal|netbanking)\b.*\b(not working|failed|error|declined)\b",
+        ]
+
+        is_payment_method_question = any(re.search(p, text) for p in payment_method_patterns)
+        looks_like_payment_issue = any(re.search(p, text) for p in payment_issue_patterns)
+
+        if is_payment_method_question and not looks_like_payment_issue:
+            return {
+                'predicted_intent': 'check_payment_methods',
+                'confidence': 0.99,
+                'reason': 'Keyword override: payment methods/options FAQ'
+            }
+
+        return None
     
     def predict_intent(self, text: str) -> Dict[str, Any]:
         """
@@ -292,9 +327,19 @@ class IntentRouter:
         """
         # Step 1: Clean text
         cleaned_text = self.clean_text(user_message)
-        
-        # Step 2: Predict intent
-        prediction = self.predict_intent(cleaned_text)
+
+        # Step 1.5: Keyword override for obvious FAQs
+        override = self._keyword_intent_override(cleaned_text)
+        if override is not None:
+            prediction = {
+                'predicted_intent': override['predicted_intent'],
+                'confidence': override['confidence'],
+                'probabilities': {override['predicted_intent']: override['confidence']},
+                'top_3_predictions': [(override['predicted_intent'], override['confidence'])]
+            }
+        else:
+            # Step 2: Predict intent
+            prediction = self.predict_intent(cleaned_text)
         
         # Step 3: Get routing decision
         routing = self.get_routing_decision(
